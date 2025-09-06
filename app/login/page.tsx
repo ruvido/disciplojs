@@ -26,7 +26,7 @@ export default function LoginPage() {
     
     try {
       await loginAction(formData)
-    } catch (err) {
+    } catch {
       setError('An unexpected error occurred. Please try again.')
       setIsLoading(false)
     }

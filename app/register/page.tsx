@@ -30,7 +30,7 @@ export default function RegisterPage() {
     try {
       await registerAction(formData)
       setSuccess(true)
-    } catch (err) {
+    } catch {
       setError('Registration failed. Please check your information and try again.')
       setIsLoading(false)
     }
