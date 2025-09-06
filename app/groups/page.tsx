@@ -213,7 +213,7 @@ export default async function GroupsPage() {
           <CardContent>
             <h2 className="text-xl font-semibold mb-4">No Groups Yet</h2>
             <p className="text-gray-600 mb-6">
-              You haven't joined any groups yet. Wait for admin approval to access the main community group.
+              You haven&apos;t joined any groups yet. Wait for admin approval to access the main community group.
             </p>
           </CardContent>
         </Card>

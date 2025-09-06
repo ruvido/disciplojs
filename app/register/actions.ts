@@ -18,7 +18,7 @@ export async function registerAction(formData: FormData) {
   const { registrationSchema } = await import('@/lib/validation/schemas')
   
   try {
-    var { email, password, name, city, bio } = registrationSchema.parse(rawData)
+    const { email, password, name, city, bio } = registrationSchema.parse(rawData)
   } catch (error) {
     console.error('Registration validation failed:', error)
     redirect('/register?error=invalid_input')

@@ -195,7 +195,7 @@ export default async function BattleplanPage({ params }: BattleplanPageProps) {
       <div className="mt-8 flex gap-4">
         <Button asChild>
           <Link href="/battleplan/track">
-            Track Today's Progress
+            Track Today&apos;s Progress
           </Link>
         </Button>
         <Button variant="outline" asChild>

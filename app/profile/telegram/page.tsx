@@ -94,7 +94,7 @@ export default async function TelegramConnectionPage() {
                   </li>
                   <li className="flex gap-2">
                     <span className="font-medium">2.</span>
-                    <span>Press "Start" in the bot chat</span>
+                    <span>Press &quot;Start&quot; in the bot chat</span>
                   </li>
                   <li className="flex gap-2">
                     <span className="font-medium">3.</span>

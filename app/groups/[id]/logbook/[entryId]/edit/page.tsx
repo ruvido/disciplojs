@@ -59,7 +59,7 @@ export default async function EditLogbookPage({ params }: EditLogbookPageProps) 
         </Link>
         <h1 className="text-3xl font-bold mt-4">Edit Logbook Entry</h1>
         <p className="text-gray-600">
-          Update your group's meeting summary and progress
+          Update your group&apos;s meeting summary and progress
         </p>
       </div>
 

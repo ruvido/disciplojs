@@ -1,8 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { LogbookForm } from './logbook-form'
@@ -52,7 +49,7 @@ export default async function NewLogbookPage({ params }: NewLogbookPageProps) {
         </Link>
         <h1 className="text-3xl font-bold mt-4">New Logbook Entry</h1>
         <p className="text-gray-600">
-          Document your group's meeting summary and progress updates
+          Document your group&apos;s meeting summary and progress updates
         </p>
       </div>
 

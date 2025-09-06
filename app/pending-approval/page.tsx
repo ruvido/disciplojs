@@ -15,7 +15,7 @@ export default function PendingApprovalPage() {
         <CardContent className="space-y-4">
           <p className="text-gray-600">
             Welcome to Disciplo! Your account is currently being reviewed by our team. 
-            You'll receive an email once your account is approved and you can start your transformation journey.
+            You&apos;ll receive an email once your account is approved and you can start your transformation journey.
           </p>
           <p className="text-sm text-gray-500">
             This usually takes 1-2 business days. Thank you for your patience!
