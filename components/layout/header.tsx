@@ -149,7 +149,7 @@ export function Header({ user }: HeaderProps) {
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="relative h-9 w-9 rounded-full">
                   <Avatar className="h-9 w-9">
-                    <AvatarImage src={user.avatar_url} alt={user.name || user.email} />
+                    <AvatarImage src={user.avatar_url || undefined} alt={user.name || user.email} />
                     <AvatarFallback>
                       {user.name?.charAt(0).toUpperCase() || user.email.charAt(0).toUpperCase()}
                     </AvatarFallback>

@@ -173,7 +173,7 @@ export default async function AdminDashboard() {
                   <div key={user.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent/50 transition-colors">
                     <div className="flex items-center space-x-4">
                       <Avatar>
-                        <AvatarImage src={user.avatar_url} />
+                        <AvatarImage src={user.avatar_url || undefined} />
                         <AvatarFallback>
                           {user.name?.charAt(0).toUpperCase() || user.email.charAt(0).toUpperCase()}
                         </AvatarFallback>
@@ -245,7 +245,7 @@ export default async function AdminDashboard() {
               {recentUsers?.map((user) => (
                 <div key={user.id} className="flex items-center">
                   <Avatar className="h-9 w-9">
-                    <AvatarImage src={user.avatar_url} />
+                    <AvatarImage src={user.avatar_url || undefined} />
                     <AvatarFallback>
                       {user.name?.charAt(0).toUpperCase() || 'U'}
                     </AvatarFallback>
