@@ -1,5 +1,6 @@
 import { Bot, Context, SessionFlavor, session } from 'grammy'
 import { createClient } from '@supabase/supabase-js'
+import { Database } from '@/types/supabase'
 
 // Session interface for storing user data
 interface SessionData {
@@ -13,7 +14,7 @@ type MyContext = Context & SessionFlavor<SessionData>
 export const bot = new Bot<MyContext>(process.env.TELEGRAM_BOT_TOKEN!)
 
 // Initialize Supabase client for bot
-const supabase = createClient(
+const supabase = createClient<Database>(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
@@ -58,6 +59,11 @@ bot.command('verify', async (ctx) => {
 
 bot.command('battleplan', async (ctx) => {
   const telegramId = ctx.from?.id.toString()
+  
+  if (!telegramId) {
+    await ctx.reply('Unable to identify your Telegram account.')
+    return
+  }
   
   // Get user from database
   const { data: user } = await supabase
@@ -120,6 +126,11 @@ bot.command('battleplan', async (ctx) => {
 bot.command('groups', async (ctx) => {
   const telegramId = ctx.from?.id.toString()
   
+  if (!telegramId) {
+    await ctx.reply('Unable to identify your Telegram account.')
+    return
+  }
+  
   // Get user from database
   const { data: user } = await supabase
     .from('users')
@@ -152,8 +163,8 @@ bot.command('groups', async (ctx) => {
   
   let message = `👥 *Your Groups*\n\n`
   
-  groups.forEach((membership: any) => {
-    const group = membership.groups
+  groups.forEach((membership) => {
+    const group = membership.groups as { name: string; type: string; telegram_chat_id: string | null } | null
     if (group) {
       message += `• *${group.name}*\n`
       message += `  Type: ${group.type}\n`

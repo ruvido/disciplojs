@@ -1,11 +1,12 @@
 import { Bot } from 'grammy'
 import { createClient } from '@supabase/supabase-js'
+import { Database } from '@/types/supabase'
 
 // Initialize bot for sending messages
 const bot = new Bot(process.env.TELEGRAM_BOT_TOKEN!)
 
 // Initialize Supabase
-const supabase = createClient(
+const supabase = createClient<Database>(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
@@ -91,12 +92,13 @@ export async function notifyDailyReminder(userId: string) {
     message += `Today's routines for "${battleplan.title}":\n\n`
     
     battleplan.pillars?.forEach((pillar) => {
-      const emoji = {
+      const emojiMap: Record<Database['public']['Enums']['pillar_type'], string> = {
         interiority: '🧘',
         relationships: '🤝',
         resources: '💼',
         health: '💪'
-      }[pillar.type]
+      }
+      const emoji = emojiMap[pillar.type as Database['public']['Enums']['pillar_type']]
       
       if (pillar.routines && pillar.routines.length > 0) {
         message += `${emoji} *${pillar.type}*\n`
