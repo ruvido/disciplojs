@@ -55,7 +55,7 @@ async function seedAdmin() {
       return
     }
 
-    // Create auth user
+    // Try to create auth user
     const { data: authData, error: authError } = await supabase.auth.admin.createUser({
       email: ADMIN_EMAIL,
       password: ADMIN_PASSWORD,
@@ -63,11 +63,52 @@ async function seedAdmin() {
     })
 
     if (authError) {
-      console.error('❌ Error creating auth user:', authError)
-      process.exit(1)
+      // If user already exists in auth, try to get the user
+      if (authError.message?.includes('already been registered') || authError.code === 'email_exists') {
+        console.log('ℹ️  Auth user already exists, updating profile...')
+        
+        // Get the existing user by email
+        const { data: { users }, error: listError } = await supabase.auth.admin.listUsers()
+        if (listError) {
+          console.error('❌ Error listing users:', listError)
+          process.exit(1)
+        }
+        
+        const existingAuthUser = users?.find(u => u.email === ADMIN_EMAIL)
+        if (!existingAuthUser) {
+          console.error('❌ Could not find auth user')
+          process.exit(1)
+        }
+
+        // Create or update user profile
+        const { error: profileError } = await supabase
+          .from('users')
+          .upsert({
+            id: existingAuthUser.id,
+            email: ADMIN_EMAIL,
+            name: ADMIN_NAME,
+            role: 'admin',
+            approved: true,
+            approved_at: new Date().toISOString(),
+            created_at: new Date().toISOString()
+          })
+
+        if (profileError) {
+          console.error('❌ Error creating user profile:', profileError)
+          process.exit(1)
+        }
+
+        console.log('✅ Admin user profile updated successfully!')
+        console.log('📧 Email:', ADMIN_EMAIL)
+        console.log('🔑 Password: (use existing password)')
+        return
+      } else {
+        console.error('❌ Error creating auth user:', authError)
+        process.exit(1)
+      }
     }
 
-    // Create or update user profile
+    // Create or update user profile for newly created auth user
     const { error: profileError } = await supabase
       .from('users')
       .upsert({
