@@ -64,7 +64,8 @@ export default async function MemberDashboard() {
   const activeBattleplan = battleplans?.find(bp => bp.is_active)
   
   // Calculate progress for active battleplan (mock data for now)
-  const calculateProgress = (battleplan: typeof battleplans[0]) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const calculateProgress = (battleplan: any) => {
     if (!battleplan) return 0
     const startDate = new Date(battleplan.start_date)
     const endDate = new Date(battleplan.end_date)
