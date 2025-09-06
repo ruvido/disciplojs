@@ -2,8 +2,10 @@ import { Bot } from 'grammy'
 import { createClient } from '@supabase/supabase-js'
 import { Database } from '@/types/supabase'
 
-// Initialize bot for sending messages
-const bot = new Bot(process.env.TELEGRAM_BOT_TOKEN!)
+// Initialize bot for sending messages (only if token exists)
+const bot = process.env.TELEGRAM_BOT_TOKEN 
+  ? new Bot(process.env.TELEGRAM_BOT_TOKEN)
+  : null as any
 
 // Initialize Supabase
 const supabase = createClient<Database>(
@@ -26,6 +28,11 @@ export async function notifyUserApproval(userId: string) {
     }
     
     // Send approval message
+    if (!bot) {
+      console.log('Telegram bot not initialized')
+      return false
+    }
+    
     await bot.api.sendMessage(
       user.telegram_id,
       `🎉 Great news, ${user.name}!\n\n` +
@@ -45,7 +52,7 @@ export async function notifyUserApproval(userId: string) {
       .single()
     
     if (defaultGroup?.telegram_chat_id) {
-      await bot.api.sendMessage(
+      await bot?.api.sendMessage(
         user.telegram_id,
         `You've been added to our main community group: ${defaultGroup.name}\n` +
         `Look for the group invite in your Telegram messages!`
@@ -112,6 +119,11 @@ export async function notifyDailyReminder(userId: string) {
     message += `Track your progress: ${process.env.NEXT_PUBLIC_APP_URL}/battleplan/track\n\n`
     message += `You've got this! 💪`
     
+    if (!bot) {
+      console.log('Telegram bot not initialized')
+      return false
+    }
+    
     await bot.api.sendMessage(user.telegram_id, message, { parse_mode: 'Markdown' })
     
     return true
@@ -130,6 +142,11 @@ export async function notifyGroupActivity(groupId: string, activity: string) {
       .single()
     
     if (!group?.telegram_chat_id) return
+    
+    if (!bot) {
+      console.log('Telegram bot not initialized')
+      return false
+    }
     
     await bot.api.sendMessage(group.telegram_chat_id, activity)
     
@@ -178,6 +195,11 @@ export async function sendWeeklyProgress(userId: string) {
     }
     
     message += `\nView full stats: ${process.env.NEXT_PUBLIC_APP_URL}/dashboard`
+    
+    if (!bot) {
+      console.log('Telegram bot not initialized')
+      return false
+    }
     
     await bot.api.sendMessage(user.telegram_id, message, { parse_mode: 'Markdown' })
     

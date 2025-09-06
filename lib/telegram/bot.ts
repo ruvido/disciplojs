@@ -10,8 +10,10 @@ interface SessionData {
 
 type MyContext = Context & SessionFlavor<SessionData>
 
-// Initialize bot
-export const bot = new Bot<MyContext>(process.env.TELEGRAM_BOT_TOKEN!)
+// Initialize bot only if token exists (not during build)
+export const bot = process.env.TELEGRAM_BOT_TOKEN 
+  ? new Bot<MyContext>(process.env.TELEGRAM_BOT_TOKEN)
+  : null as any
 
 // Initialize Supabase client for bot
 const supabase = createClient<Database>(
@@ -20,10 +22,12 @@ const supabase = createClient<Database>(
 )
 
 // Use session middleware
-bot.use(session({ initial: (): SessionData => ({}) }))
+if (bot) {
+  bot.use(session({ initial: (): SessionData => ({}) }))
+}
 
 // Command handlers
-bot.command('start', async (ctx) => {
+bot?.command('start', async (ctx) => {
   const telegramId = ctx.from?.id.toString()
   const username = ctx.from?.username || ''
   
@@ -47,7 +51,7 @@ bot.command('start', async (ctx) => {
   }
 })
 
-bot.command('verify', async (ctx) => {
+bot?.command('verify', async (ctx) => {
   await ctx.reply(
     `To connect your Telegram account:\n\n` +
     `1. Log in to Disciplo webapp\n` +
@@ -57,7 +61,7 @@ bot.command('verify', async (ctx) => {
   )
 })
 
-bot.command('battleplan', async (ctx) => {
+bot?.command('battleplan', async (ctx) => {
   const telegramId = ctx.from?.id.toString()
   
   if (!telegramId) {
@@ -123,7 +127,7 @@ bot.command('battleplan', async (ctx) => {
   await ctx.reply(message, { parse_mode: 'Markdown' })
 })
 
-bot.command('groups', async (ctx) => {
+bot?.command('groups', async (ctx) => {
   const telegramId = ctx.from?.id.toString()
   
   if (!telegramId) {
@@ -179,7 +183,7 @@ bot.command('groups', async (ctx) => {
   await ctx.reply(message, { parse_mode: 'Markdown' })
 })
 
-bot.command('help', async (ctx) => {
+bot?.command('help', async (ctx) => {
   await ctx.reply(
     `*Disciplo Bot Commands*\n\n` +
     `/start - Welcome message\n` +
@@ -194,7 +198,7 @@ bot.command('help', async (ctx) => {
 })
 
 // Handle bot being added to a group as admin
-bot.on(':new_chat_members', async (ctx) => {
+bot?.on(':new_chat_members', async (ctx) => {
   const newMembers = ctx.message?.new_chat_members || []
   const botUsername = ctx.me.username
   
@@ -242,7 +246,7 @@ bot.on(':new_chat_members', async (ctx) => {
 })
 
 // Handle member joining group
-bot.on(':new_chat_members', async (ctx) => {
+bot?.on(':new_chat_members', async (ctx) => {
   const newMembers = ctx.message?.new_chat_members || []
   const chatId = ctx.chat.id.toString()
   
@@ -295,7 +299,7 @@ bot.on(':new_chat_members', async (ctx) => {
 })
 
 // Handle member leaving group
-bot.on(':left_chat_member', async (ctx) => {
+bot?.on(':left_chat_member', async (ctx) => {
   const leftMember = ctx.message?.left_chat_member
   if (!leftMember || leftMember.is_bot) return
   
@@ -378,6 +382,6 @@ async function handleVerification(
 }
 
 // Error handler
-bot.catch((err) => {
+bot?.catch((err) => {
   console.error('Bot error:', err)
 })
