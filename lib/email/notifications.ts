@@ -224,12 +224,14 @@ export async function sendDailyReminderEmail(userId: string) {
 
     let routinesHtml = ''
     battleplan.pillars?.forEach((pillar) => {
-      const emoji = {
+      const emojiMap = {
         interiority: '🧘',
         relationships: '🤝',
         resources: '💼',
         health: '💪'
-      }[pillar.type]
+      } as const
+      
+      const emoji = emojiMap[pillar.type as keyof typeof emojiMap] || '📝'
       
       if (pillar.routines && pillar.routines.length > 0) {
         routinesHtml += `<h3>${emoji} ${pillar.type.charAt(0).toUpperCase() + pillar.type.slice(1)}</h3><ul>`
