@@ -5,7 +5,7 @@ import { Database } from '@/types/supabase'
 // Initialize bot for sending messages (only if token exists)
 const bot = process.env.TELEGRAM_BOT_TOKEN 
   ? new Bot(process.env.TELEGRAM_BOT_TOKEN)
-  : null as any
+  : (null as unknown as Bot)
 
 // Initialize Supabase
 const supabase = createClient<Database>(

@@ -13,7 +13,7 @@ type MyContext = Context & SessionFlavor<SessionData>
 // Initialize bot only if token exists (not during build)
 export const bot = process.env.TELEGRAM_BOT_TOKEN 
   ? new Bot<MyContext>(process.env.TELEGRAM_BOT_TOKEN)
-  : null as any
+  : (null as unknown as Bot<MyContext>)
 
 // Initialize Supabase client for bot
 const supabase = createClient<Database>(
