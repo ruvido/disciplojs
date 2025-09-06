@@ -98,16 +98,18 @@ bot.command('battleplan', async (ctx) => {
   
   message += `*Today's Routines:*\n`
   
-  battleplan.pillars?.forEach((pillar) => {
-    const emoji = {
+  battleplan.pillars?.forEach((pillar: any) => {
+    const emojiMap = {
       interiority: '🧘',
       relationships: '🤝',
       resources: '💼',
       health: '💪'
-    }[pillar.type]
+    } as const
+    
+    const emoji = emojiMap[pillar.type as keyof typeof emojiMap] || '📝'
     
     message += `\n${emoji} *${pillar.type.charAt(0).toUpperCase() + pillar.type.slice(1)}*\n`
-    pillar.routines?.forEach((routine) => {
+    pillar.routines?.forEach((routine: any) => {
       message += `• ${routine.title}\n`
     })
   })
