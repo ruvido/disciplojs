@@ -98,7 +98,7 @@ bot.command('battleplan', async (ctx) => {
   
   message += `*Today's Routines:*\n`
   
-  battleplan.pillars?.forEach((pillar: any) => {
+  battleplan.pillars?.forEach((pillar: { type: string; routines?: { title: string }[] }) => {
     const emojiMap = {
       interiority: '🧘',
       relationships: '🤝',
@@ -109,7 +109,7 @@ bot.command('battleplan', async (ctx) => {
     const emoji = emojiMap[pillar.type as keyof typeof emojiMap] || '📝'
     
     message += `\n${emoji} *${pillar.type.charAt(0).toUpperCase() + pillar.type.slice(1)}*\n`
-    pillar.routines?.forEach((routine: any) => {
+    pillar.routines?.forEach((routine: { title: string }) => {
       message += `• ${routine.title}\n`
     })
   })

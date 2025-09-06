@@ -34,7 +34,7 @@ export async function sendApprovalEmail(userId: string) {
 
     // Generate magic link token (valid for 7 days)
     const token = Buffer.from(`${userId}:${Date.now()}`).toString('base64')
-    const magicLink = `${process.env.NEXT_PUBLIC_APP_URL}/auth/verify?token=${token}`
+    // const magicLink = `${process.env.NEXT_PUBLIC_APP_URL}/auth/verify?token=${token}` // TODO: implement magic link verification
 
     // Store token in database (you might want to add a tokens table)
     // For now, we'll use the direct login approach
