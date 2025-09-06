@@ -28,7 +28,13 @@ export default async function DashboardLayout({
   
   return (
     <div className="min-h-screen bg-background">
-      <Header user={profile} />
+      <Header user={profile ? {
+        id: profile.id,
+        email: profile.email,
+        name: profile.name || undefined,
+        role: profile.role || undefined,
+        avatar_url: profile.avatar_url || undefined
+      } : undefined} />
       <main className="container mx-auto">
         {children}
       </main>

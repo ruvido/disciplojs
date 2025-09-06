@@ -30,7 +30,13 @@ export default async function AdminLayout({
   
   return (
     <div className="min-h-screen bg-background">
-      <Header user={profile} />
+      <Header user={profile ? {
+        id: profile.id,
+        email: profile.email,
+        name: profile.name || undefined,
+        role: profile.role || undefined,
+        avatar_url: profile.avatar_url || undefined
+      } : undefined} />
       <div className="flex">
         <AdminSidebar />
         <main className="flex-1 lg:pl-64">

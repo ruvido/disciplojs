@@ -31,10 +31,10 @@ interface HeaderProps {
   user?: {
     id: string
     email: string
-    name?: string
-    role?: string
-    avatar_url?: string
-  }
+    name?: string | null
+    role?: string | null
+    avatar_url?: string | null
+  } | null
 }
 
 export function Header({ user }: HeaderProps) {
