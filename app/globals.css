@@ -2,6 +2,19 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Test CSS to verify CSS is loading */
+body {
+  background-color: white !important;
+  font-family: system-ui, -apple-system, sans-serif !important;
+}
+
+.test-css-working {
+  background: linear-gradient(45deg, #ff6b6b, #4ecdc4) !important;
+  color: white !important;
+  padding: 1rem !important;
+  border-radius: 8px !important;
+}
+
 @layer base {
   :root {
     --background: 0 0% 100%;
