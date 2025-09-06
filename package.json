@@ -4,9 +4,10 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "npm run setup:admin && next build",
     "start": "next start",
     "lint": "eslint",
+    "setup:admin": "tsx scripts/seed-admin.ts",
     "telegram:webhook": "node scripts/setup-telegram-webhook.js",
     "telegram:webhook:delete": "node scripts/setup-telegram-webhook.js delete"
   },
@@ -45,9 +46,11 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "dotenv": "^16.4.5",
     "eslint": "^9",
     "eslint-config-next": "15.5.2",
     "tailwindcss": "^4",
+    "tsx": "^4.17.0",
     "tw-animate-css": "^1.3.8",
     "typescript": "^5"
   }
