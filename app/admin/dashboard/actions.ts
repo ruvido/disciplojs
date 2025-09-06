@@ -40,7 +40,7 @@ export async function approveUserAction(formData: FormData) {
       approved: true,
       approved_at: new Date().toISOString(),
       approved_by: currentUser.id
-    })
+    } as any)
     .eq('id', userId)
 
   if (error) {
