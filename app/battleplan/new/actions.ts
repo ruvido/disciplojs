@@ -31,8 +31,9 @@ export async function createBattleplanAction(formData: FormData) {
 
   const { battleplanSchema } = await import('@/lib/validation/schemas')
   
+  let validatedData
   try {
-    const validatedData = battleplanSchema.parse(rawData)
+    validatedData = battleplanSchema.parse(rawData)
   } catch (error) {
     console.error('Battleplan validation failed:', error)
     redirect('/battleplan/new?error=invalid_input')

@@ -17,12 +17,15 @@ export async function registerAction(formData: FormData) {
 
   const { registrationSchema } = await import('@/lib/validation/schemas')
   
+  let validatedData
   try {
-    const { email, password, name, city, bio } = registrationSchema.parse(rawData)
+    validatedData = registrationSchema.parse(rawData)
   } catch (error) {
     console.error('Registration validation failed:', error)
     redirect('/register?error=invalid_input')
   }
+  
+  const { email, password, name, city, bio } = validatedData
 
   // Sign up user
   const { error: signUpError, data } = await supabase.auth.signUp({

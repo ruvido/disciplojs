@@ -24,7 +24,7 @@ export async function POST(req: NextRequest) {
     let body
     try {
       body = await req.json()
-    } catch (error) {
+    } catch {
       console.error('Invalid JSON in webhook request')
       return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 })
     }

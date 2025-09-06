@@ -14,8 +14,9 @@ export async function loginAction(formData: FormData) {
 
   const { loginSchema } = await import('@/lib/validation/schemas')
   
+  let credentials
   try {
-    const credentials = loginSchema.parse(rawCredentials)
+    credentials = loginSchema.parse(rawCredentials)
   } catch (error) {
     console.error('Login validation failed:', error)
     redirect('/login?error=invalid_input')

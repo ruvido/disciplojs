@@ -43,8 +43,9 @@ export default async function BattleplanPage({ params }: BattleplanPageProps) {
     (Date.now() - new Date(battleplan.start_date).getTime()) / (1000 * 60 * 60 * 24)
   )
   
-  const daysRemaining = Math.max(0, battleplan.duration - daysSinceStart)
-  const progress = Math.min(100, (daysSinceStart / battleplan.duration) * 100)
+  const duration = battleplan.duration || 30  // Default to 30 days if null
+  const daysRemaining = Math.max(0, duration - daysSinceStart)
+  const progress = Math.min(100, (daysSinceStart / duration) * 100)
 
   const pillarColors = {
     interiority: 'text-purple-700',
@@ -139,7 +140,7 @@ export default async function BattleplanPage({ params }: BattleplanPageProps) {
                     <h4 className="font-medium mb-3">Daily Routines:</h4>
                     <ul className="space-y-2">
                       {pillar.routines
-                        .sort((a, b) => a.order_index - b.order_index)
+                        .sort((a, b) => (a.order_index || 0) - (b.order_index || 0))
                         .map((routine) => (
                         <li key={routine.id} className="flex items-center gap-2">
                           <div className="w-2 h-2 bg-gray-300 rounded-full"></div>
@@ -169,7 +170,7 @@ export default async function BattleplanPage({ params }: BattleplanPageProps) {
                   <h4 className="font-medium mb-4">Daily Routines:</h4>
                   <div className="space-y-3">
                     {pillar.routines
-                      .sort((a, b) => a.order_index - b.order_index)
+                      .sort((a, b) => (a.order_index || 0) - (b.order_index || 0))
                       .map((routine) => (
                       <div key={routine.id} className="p-3 border rounded-lg">
                         <div className="flex items-center justify-between">

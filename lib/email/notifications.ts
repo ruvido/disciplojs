@@ -39,7 +39,7 @@ export async function sendApprovalEmail(userId: string) {
     // Store token in database (you might want to add a tokens table)
     // For now, we'll use the direct login approach
 
-    const { data, error } = await resend.emails.send({
+    const { error } = await resend.emails.send({
       from: 'Disciplo <noreply@disciplo.com>',
       to: user.email,
       subject: '🎉 Your Disciplo Account Has Been Approved!',
@@ -128,7 +128,7 @@ export async function sendApprovalEmail(userId: string) {
 
 export async function sendWelcomeEmail(email: string, name: string) {
   try {
-    const { data, error } = await resend.emails.send({
+    const { error } = await resend.emails.send({
       from: 'Disciplo <noreply@disciplo.com>',
       to: email,
       subject: 'Welcome to Disciplo - Account Under Review',
@@ -240,7 +240,7 @@ export async function sendDailyReminderEmail(userId: string) {
       }
     })
 
-    const { data, error } = await resend.emails.send({
+    const { error } = await resend.emails.send({
       from: 'Disciplo <noreply@disciplo.com>',
       to: user.email,
       subject: `🌅 Daily Routines - ${battleplan.title}`,

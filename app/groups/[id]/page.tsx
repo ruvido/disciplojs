@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import Link from 'next/link'
+import Image from 'next/image'
 import { redirect } from 'next/navigation'
 import { RichTextEditor } from '@/components/rich-text-editor'
 
@@ -156,7 +157,7 @@ export default async function GroupPage({ params }: GroupPageProps) {
                         </CardDescription>
                       </div>
                       <div className="text-sm text-gray-500">
-                        {new Date(entry.created_at).toLocaleDateString()}
+                        {entry.created_at ? new Date(entry.created_at).toLocaleDateString() : 'Unknown date'}
                       </div>
                     </div>
                   </CardHeader>
@@ -212,9 +213,11 @@ export default async function GroupPage({ params }: GroupPageProps) {
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
                       {member.users?.avatar_url ? (
-                        <img 
+                        <Image 
                           src={member.users.avatar_url} 
                           alt={member.users.name || 'Member'} 
+                          width={40}
+                          height={40}
                           className="w-full h-full rounded-full object-cover"
                         />
                       ) : (

@@ -108,7 +108,7 @@ export default async function AdminDashboard() {
                     <TableCell>{user.email}</TableCell>
                     <TableCell>{user.city || '-'}</TableCell>
                     <TableCell>
-                      {new Date(user.created_at).toLocaleDateString()}
+                      {user.created_at ? new Date(user.created_at).toLocaleDateString() : '-'}
                     </TableCell>
                     <TableCell>
                       <form action={approveUserAction} className="inline">

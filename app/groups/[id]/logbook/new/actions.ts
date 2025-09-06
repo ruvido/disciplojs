@@ -58,7 +58,7 @@ export async function createLogbookEntryAction(formData: FormData) {
     .replace(/on\w+\s*=/gi, '')
 
   // Create logbook entry
-  const { data: logbookEntry, error } = await supabase
+  const { error } = await supabase
     .from('logbook_entries')
     .insert({
       group_id: groupId,
