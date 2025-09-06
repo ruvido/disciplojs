@@ -152,7 +152,7 @@ bot.command('groups', async (ctx) => {
   
   let message = `👥 *Your Groups*\n\n`
   
-  groups.forEach((membership) => {
+  groups.forEach((membership: any) => {
     const group = membership.groups
     if (group) {
       message += `• *${group.name}*\n`
