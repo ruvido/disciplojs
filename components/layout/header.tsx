@@ -22,7 +22,6 @@ import {
   LogOut,
   Settings,
   LayoutDashboard,
-  BookOpen,
   Shield
 } from 'lucide-react'
 import { cn } from '@/lib/utils'

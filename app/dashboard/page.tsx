@@ -3,19 +3,17 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { 
   Target, 
   Users, 
-  Trophy, 
-  Calendar,
+  Trophy,
   ArrowRight,
   Plus,
   Clock,
   MessageSquare,
-  TrendingUp,
   Activity
 } from 'lucide-react'
 
@@ -66,7 +64,7 @@ export default async function MemberDashboard() {
   const activeBattleplan = battleplans?.find(bp => bp.is_active)
   
   // Calculate progress for active battleplan (mock data for now)
-  const calculateProgress = (battleplan: any) => {
+  const calculateProgress = (battleplan: typeof battleplans[0]) => {
     if (!battleplan) return 0
     const startDate = new Date(battleplan.start_date)
     const endDate = new Date(battleplan.end_date)
@@ -87,7 +85,7 @@ export default async function MemberDashboard() {
             Welcome back, {userProfile.name?.split(' ')[0]}!
           </h2>
           <p className="text-muted-foreground">
-            Here's an overview of your transformation journey
+            Here&apos;s an overview of your transformation journey
           </p>
         </div>
         <div className="flex items-center space-x-2">
