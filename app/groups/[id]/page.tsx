@@ -237,7 +237,7 @@ export default async function GroupPage({ params }: GroupPageProps) {
                         )}
                       </div>
                       <p className="text-xs text-gray-400">
-                        Joined {new Date(member.joined_at).toLocaleDateString()}
+                        Joined {member.joined_at ? new Date(member.joined_at).toLocaleDateString() : 'Unknown'}
                       </p>
                     </div>
                   </div>

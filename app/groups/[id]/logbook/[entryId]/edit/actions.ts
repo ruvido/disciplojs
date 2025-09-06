@@ -38,20 +38,29 @@ export async function updateLogbookEntryAction(formData: FormData) {
     redirect('/groups')
   }
 
-  // Verify user is admin of this group AND entry exists
+  // First verify entry exists and belongs to group
   const { data: entry } = await supabase
     .from('logbook_entries')
-    .select(`
-      id,
-      group_members!inner(role)
-    `)
+    .select('id, group_id')
     .eq('id', entryId)
     .eq('group_id', groupId)
-    .eq('group_members.user_id', user.id)
     .single()
 
-  if (!entry || entry.group_members.role !== 'admin') {
-    console.error('Unauthorized: User is not group admin or entry not found')
+  if (!entry) {
+    console.error('Logbook entry not found')
+    redirect(`/groups/${groupId}`)
+  }
+
+  // Then verify user is admin of this group
+  const { data: membership } = await supabase
+    .from('group_members')
+    .select('role')
+    .eq('group_id', groupId)
+    .eq('user_id', user.id)
+    .single()
+
+  if (!membership || membership.role !== 'admin') {
+    console.error('Unauthorized: User is not group admin')
     redirect(`/groups/${groupId}`)
   }
 
@@ -103,21 +112,28 @@ export async function deleteLogbookEntryAction(formData: FormData) {
     redirect('/groups')
   }
 
-  // Verify user is admin of this group AND entry exists
-  const { data: entry } = await supabase
+  // Verify entry exists and user is admin (same check as before)
+  const { data: entryCheck } = await supabase
     .from('logbook_entries')
-    .select(`
-      id,
-      title,
-      group_members!inner(role)
-    `)
+    .select('id, group_id, title')
     .eq('id', entryId)
     .eq('group_id', groupId)
-    .eq('group_members.user_id', user.id)
     .single()
 
-  if (!entry || entry.group_members.role !== 'admin') {
-    console.error('Unauthorized: User is not group admin or entry not found')
+  if (!entryCheck) {
+    console.error('Logbook entry not found')
+    redirect(`/groups/${groupId}`)
+  }
+
+  const { data: membershipCheck } = await supabase
+    .from('group_members')
+    .select('role')
+    .eq('group_id', groupId)
+    .eq('user_id', user.id)
+    .single()
+
+  if (!membershipCheck || membershipCheck.role !== 'admin') {
+    console.error('Unauthorized: User is not group admin')
     redirect(`/groups/${groupId}`)
   }
 
@@ -137,7 +153,7 @@ export async function deleteLogbookEntryAction(formData: FormData) {
     const { notifyGroupActivity } = await import('@/lib/telegram/notifications')
     await notifyGroupActivity(
       groupId, 
-      `🗑️ Logbook entry "${entry.title}" was deleted by group admin.`
+      `🗑️ Logbook entry "${entryCheck.title}" was deleted by group admin.`
     )
   } catch (error) {
     console.error('Could not send group notification:', error)
