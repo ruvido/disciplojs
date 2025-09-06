@@ -21,7 +21,7 @@ export async function approveUserAction(formData: FormData) {
     .eq('id', currentUser.id)
     .single()
 
-  if (currentUserData?.role !== 'admin') {
+  if (!currentUserData || currentUserData.role !== 'admin') {
     console.error('Unauthorized: User is not an admin')
     redirect('/dashboard')
   }
