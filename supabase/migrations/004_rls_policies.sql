@@ -49,10 +49,10 @@ CREATE POLICY "Members can view group members" ON group_members
 CREATE POLICY "Group admins can manage members" ON group_members
   FOR ALL USING (
     EXISTS (
-      SELECT 1 FROM group_members 
-      WHERE group_id = group_members.group_id 
-      AND user_id::text = auth.uid()::text 
-      AND role = 'admin'
+      SELECT 1 FROM group_members gm
+      WHERE gm.group_id = group_members.group_id 
+      AND gm.user_id::text = auth.uid()::text 
+      AND gm.role = 'admin'
     )
   );
 
@@ -124,6 +124,7 @@ CREATE POLICY "Group admins can create logbook entries" ON logbook_entries
       AND user_id::text = auth.uid()::text 
       AND role = 'admin'
     )
+    AND author_id::text = auth.uid()::text
   );
 
 CREATE POLICY "Authors can update own logbook entries" ON logbook_entries
@@ -147,6 +148,7 @@ CREATE POLICY "Group admins can create polls" ON polls
       AND user_id::text = auth.uid()::text 
       AND role = 'admin'
     )
+    AND created_by::text = auth.uid()::text
   );
 
 -- Poll options policies (inherit from polls)
