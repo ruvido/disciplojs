@@ -1,138 +1,254 @@
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import Link from 'next/link'
 import { 
   UserCheck, 
   UserX, 
   Clock,
-  Mail,
-  MapPin,
-  Calendar,
-  FileText,
-  CheckCircle
+  CheckCircle,
+  XCircle,
+  MoreHorizontal,
+  AlertCircle,
+  Users
 } from 'lucide-react'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { Alert, AlertDescription } from '@/components/ui/alert'
 import { approveUserAction, rejectUserAction } from '../users/actions'
 
-export default async function AdminApprovalsPage() {
-  const supabase = await createClient()
+export default async function PendingApprovalsPage() {
+  let pendingUsers = null
+  let error = null
 
-  // Get pending users
-  const { data: pendingUsers } = await supabase
-    .from('users')
-    .select('*')
-    .eq('approved', false)
-    .order('created_at', { ascending: false })
+  try {
+    const supabase = createAdminClient()
+
+    // Get all pending users
+    const { data, error: fetchError } = await supabase
+      .from('users')
+      .select('*')
+      .eq('approved', false)
+      .order('created_at', { ascending: false })
+
+    if (fetchError) {
+      console.error('Error fetching pending users:', fetchError)
+      error = fetchError.message
+    } else {
+      pendingUsers = data
+    }
+  } catch (err) {
+    console.error('Database error:', err)
+    error = 'Failed to connect to database'
+  }
 
   return (
     <div className="flex-1 space-y-4 p-8 pt-6">
       <div className="flex items-center justify-between space-y-2">
-        <div>
-          <h2 className="text-3xl font-bold tracking-tight">Pending Approvals</h2>
-          <p className="text-muted-foreground">
-            Review and approve new member registrations
-          </p>
-        </div>
+        <h2 className="text-3xl font-bold tracking-tight">Pending Approvals</h2>
         <div className="flex items-center space-x-2">
-          <Badge variant="secondary" className="text-sm">
-            <Clock className="mr-2 h-4 w-4" />
-            {pendingUsers?.length || 0} pending
-          </Badge>
+          <Button variant="outline" size="sm" asChild>
+            <Link href="/admin/dashboard">
+              Back to Dashboard
+            </Link>
+          </Button>
+          <Button variant="outline" size="sm" asChild>
+            <Link href="/admin/users">
+              All Users
+            </Link>
+          </Button>
         </div>
       </div>
 
-      {!pendingUsers || pendingUsers.length === 0 ? (
+      {error && (
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
+
+      {/* Stats */}
+      <div className="grid gap-4 md:grid-cols-4">
         <Card>
-          <CardContent className="flex flex-col items-center justify-center py-12 text-center">
-            <CheckCircle className="h-12 w-12 text-green-500 mb-4" />
-            <h3 className="text-lg font-semibold mb-2">All caught up!</h3>
-            <p className="text-muted-foreground">No pending user approvals at the moment.</p>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Pending</CardTitle>
+            <Clock className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{pendingUsers?.length || 0}</div>
+            <p className="text-xs text-muted-foreground">
+              Awaiting review
+            </p>
           </CardContent>
         </Card>
-      ) : (
-        <div className="space-y-6">
-          {pendingUsers.map((user) => (
-            <Card key={user.id} className="overflow-hidden">
-              <CardHeader className="pb-4">
-                <div className="flex items-start justify-between">
+        
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Today</CardTitle>
+            <UserCheck className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {pendingUsers?.filter(u => 
+                new Date(u.created_at).toDateString() === new Date().toDateString()
+              ).length || 0}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              New today
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">This Week</CardTitle>
+            <UserCheck className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {pendingUsers?.filter(u => {
+                const created = new Date(u.created_at)
+                const weekAgo = new Date()
+                weekAgo.setDate(weekAgo.getDate() - 7)
+                return created >= weekAgo
+              }).length || 0}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              New this week
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Oldest</CardTitle>
+            <Clock className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {pendingUsers && pendingUsers.length > 0 
+                ? Math.ceil((Date.now() - new Date(pendingUsers[pendingUsers.length - 1]?.created_at).getTime()) / (1000 * 60 * 60 * 24))
+                : 0}d
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Days waiting
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Pending Users List */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Review Queue</CardTitle>
+          <CardDescription>
+            New user registrations requiring approval
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {!pendingUsers || pendingUsers.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-12 text-center">
+              <CheckCircle className="h-12 w-12 text-muted-foreground mb-4" />
+              <p className="text-lg font-medium">All caught up!</p>
+              <p className="text-sm text-muted-foreground mb-4">
+                No pending user approvals at the moment
+              </p>
+              <Button variant="outline" asChild>
+                <Link href="/admin/users">
+                  <Users className="mr-2 h-4 w-4" />
+                  View All Users
+                </Link>
+              </Button>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <div className="text-sm text-muted-foreground mb-4">
+                {pendingUsers.length} user{pendingUsers.length !== 1 ? 's' : ''} waiting for approval
+              </div>
+              
+              {pendingUsers.map((user) => (
+                <div key={user.id} className="flex items-center justify-between p-6 border rounded-lg hover:bg-accent/50 transition-colors">
                   <div className="flex items-center space-x-4">
-                    <Avatar className="h-16 w-16">
+                    <Avatar className="h-12 w-12">
                       <AvatarImage src={user.avatar_url || undefined} />
                       <AvatarFallback className="text-lg">
                         {user.name?.charAt(0).toUpperCase() || user.email.charAt(0).toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
-                    <div>
-                      <CardTitle className="text-xl">{user.name}</CardTitle>
-                      <CardDescription className="text-base">
-                        {user.email}
-                      </CardDescription>
-                      <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <p className="text-base font-medium leading-none">{user.name || 'No name'}</p>
+                        <Badge variant="secondary">
+                          Pending
+                        </Badge>
+                      </div>
+                      <p className="text-sm text-muted-foreground">{user.email}</p>
+                      <div className="flex items-center gap-4 mt-2">
                         {user.city && (
-                          <span className="flex items-center gap-1">
-                            <MapPin className="w-4 h-4" />
-                            {user.city}
-                          </span>
+                          <Badge variant="outline" className="text-xs">
+                            📍 {user.city}
+                          </Badge>
                         )}
-                        <span className="flex items-center gap-1">
-                          <Calendar className="w-4 h-4" />
-                          Registered {user.created_at ? new Date(user.created_at).toLocaleDateString() : 'Unknown'}
+                        <span className="text-xs text-muted-foreground flex items-center">
+                          <Clock className="h-3 w-3 mr-1" />
+                          {new Date(user.created_at).toLocaleDateString()} at {new Date(user.created_at).toLocaleTimeString()}
                         </span>
                       </div>
+                      {user.bio && (
+                        <p className="text-sm text-muted-foreground max-w-md mt-2 p-2 bg-muted rounded">
+                          "{user.bio}"
+                        </p>
+                      )}
                     </div>
                   </div>
-                  <Badge variant="secondary">
-                    <Clock className="mr-1 h-3 w-3" />
-                    Pending
-                  </Badge>
-                </div>
-              </CardHeader>
-              
-              <CardContent className="space-y-4">
-                {user.bio && (
-                  <div>
-                    <h4 className="text-sm font-medium mb-2 flex items-center gap-2">
-                      <FileText className="w-4 h-4" />
-                      About
-                    </h4>
-                    <p className="text-sm text-muted-foreground bg-accent/50 p-3 rounded-md">
-                      {user.bio}
-                    </p>
-                  </div>
-                )}
-                
-                <div className="flex items-center justify-between pt-4 border-t">
-                  <div className="text-sm text-muted-foreground">
-                    <span className="flex items-center gap-1">
-                      <Mail className="w-4 h-4" />
-                      User ID: {user.id.slice(0, 8)}...
-                    </span>
-                  </div>
-                  
                   <div className="flex items-center space-x-3">
-                    <form action={rejectUserAction} className="inline">
-                      <input type="hidden" name="userId" value={user.id} />
-                      <Button type="submit" variant="outline" size="sm">
-                        <UserX className="h-4 w-4 mr-2" />
-                        Reject
-                      </Button>
-                    </form>
-                    
                     <form action={approveUserAction} className="inline">
                       <input type="hidden" name="userId" value={user.id} />
-                      <Button type="submit" size="sm">
-                        <UserCheck className="h-4 w-4 mr-2" />
+                      <Button type="submit" size="default" className="bg-green-600 hover:bg-green-700">
+                        <CheckCircle className="h-4 w-4 mr-2" />
                         Approve
                       </Button>
                     </form>
+                    <form action={rejectUserAction} className="inline">
+                      <input type="hidden" name="userId" value={user.id} />
+                      <Button type="submit" size="default" variant="outline" className="border-red-200 text-red-600 hover:bg-red-50">
+                        <XCircle className="h-4 w-4 mr-2" />
+                        Reject
+                      </Button>
+                    </form>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="sm">
+                          <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem asChild>
+                          <Link href={`/admin/users/${user.id}`}>
+                            View Full Profile
+                          </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem>
+                          Send Message
+                        </DropdownMenuItem>
+                        <DropdownMenuItem>
+                          Request More Info
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      )}
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   )
 }
