@@ -6,7 +6,6 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import Link from 'next/link'
 import { 
   UserCheck, 
-  UserX, 
   Clock,
   CheckCircle,
   XCircle,
@@ -96,7 +95,7 @@ export default async function PendingApprovalsPage() {
           <CardContent>
             <div className="text-2xl font-bold">
               {pendingUsers?.filter(u => 
-                new Date(u.created_at).toDateString() === new Date().toDateString()
+                u.created_at && new Date(u.created_at).toDateString() === new Date().toDateString()
               ).length || 0}
             </div>
             <p className="text-xs text-muted-foreground">
@@ -113,6 +112,7 @@ export default async function PendingApprovalsPage() {
           <CardContent>
             <div className="text-2xl font-bold">
               {pendingUsers?.filter(u => {
+                if (!u.created_at) return false
                 const created = new Date(u.created_at)
                 const weekAgo = new Date()
                 weekAgo.setDate(weekAgo.getDate() - 7)
@@ -132,8 +132,8 @@ export default async function PendingApprovalsPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {pendingUsers && pendingUsers.length > 0 
-                ? Math.ceil((Date.now() - new Date(pendingUsers[pendingUsers.length - 1]?.created_at).getTime()) / (1000 * 60 * 60 * 24))
+              {pendingUsers && pendingUsers.length > 0 && pendingUsers[pendingUsers.length - 1]?.created_at
+                ? Math.ceil((Date.now() - new Date(pendingUsers[pendingUsers.length - 1].created_at!).getTime()) / (1000 * 60 * 60 * 24))
                 : 0}d
             </div>
             <p className="text-xs text-muted-foreground">
@@ -197,12 +197,12 @@ export default async function PendingApprovalsPage() {
                         )}
                         <span className="text-xs text-muted-foreground flex items-center">
                           <Clock className="h-3 w-3 mr-1" />
-                          {new Date(user.created_at).toLocaleDateString()} at {new Date(user.created_at).toLocaleTimeString()}
+                          {user.created_at ? new Date(user.created_at).toLocaleDateString() : 'Unknown'} at {user.created_at ? new Date(user.created_at).toLocaleTimeString() : 'Unknown'}
                         </span>
                       </div>
                       {user.bio && (
                         <p className="text-sm text-muted-foreground max-w-md mt-2 p-2 bg-muted rounded">
-                          "{user.bio}"
+                          &quot;{user.bio}&quot;
                         </p>
                       )}
                     </div>

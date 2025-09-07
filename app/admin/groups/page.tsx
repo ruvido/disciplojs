@@ -18,11 +18,11 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 export default async function AdminGroupsPage() {
   let groups = null
   let error = null
-  let stats = {
+  const stats = {
     totalGroups: 0,
     activeGroups: 0,
     totalMembers: 0,
-    mainGroup: null
+    mainGroup: null as { city: string | null; created_at: string | null; description: string | null; id: string; is_default: boolean | null; max_members: number | null; name: string; telegram_chat_id: string | null; type: string | null; group_members: unknown[] } | null
   }
 
   try {
@@ -213,7 +213,7 @@ export default async function AdminGroupsPage() {
                         )}
                         <span className="text-xs text-muted-foreground flex items-center">
                           <Calendar className="h-3 w-3 mr-1" />
-                          {new Date(group.created_at).toLocaleDateString()}
+                          {group.created_at ? new Date(group.created_at).toLocaleDateString() : 'Unknown'}
                         </span>
                       </div>
                     </div>

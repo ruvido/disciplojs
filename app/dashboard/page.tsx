@@ -47,7 +47,7 @@ export default async function MemberDashboard() {
           <CardContent className="text-center space-y-4">
             <p className="text-sm text-muted-foreground">
               Thank you for registering! An administrator will review your application shortly. 
-              You'll receive an email once your account is approved.
+              You&apos;ll receive an email once your account is approved.
             </p>
             <div className="space-y-2">
               <Button variant="outline" className="w-full" asChild>
