@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install:*)",
+      "Bash(npx supabase:*)",
+      "Bash(npx vercel:*)",
+      "Bash(npm cache clean:*)",
+      "Bash(tree:*)",
+      "Bash(npm run build:*)",
+      "Bash(npx tsx:*)",
+      "Bash(cat:*)",
+      "Bash(chmod:*)",
+      "Bash(node:*)",
+      "Bash(npx next build:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

@@ -4,10 +4,10 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "npm run setup:admin && next build",
+    "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "setup:admin": "tsx scripts/seed-admin.ts",
+    "setup:admin": "npx tsx scripts/seed-admin.ts",
     "telegram:webhook": "node scripts/setup-telegram-webhook.js",
     "telegram:webhook:delete": "node scripts/setup-telegram-webhook.js delete"
   },

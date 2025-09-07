@@ -6,9 +6,9 @@ import { resolve } from 'path'
 // Load environment variables
 dotenv.config({ path: resolve(process.cwd(), '.env.local') })
 
-const ADMIN_EMAIL = 'ruvido@gmail.com'
-const ADMIN_PASSWORD = 'solemio77'
-const ADMIN_NAME = 'Admin'
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'admin@disciplo.com'
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'ChangeThisPassword123!'
+const ADMIN_NAME = process.env.ADMIN_NAME || 'Admin'
 
 async function seedAdmin() {
   // Check if Supabase is configured
