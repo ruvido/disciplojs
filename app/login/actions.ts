@@ -30,17 +30,22 @@ export async function loginAction(formData: FormData) {
   }
 
   // Check user role and redirect appropriately
-  const { data: userData } = await supabase
+  const { data: userData, error: userError } = await supabase
     .from('users')
     .select('role, approved')
     .eq('id', data.user.id)
     .single()
 
-  if (!userData?.approved) {
+  if (userError || !userData) {
+    console.error('User data query failed:', userError)
+    redirect('/login?error=user_not_found')
+  }
+
+  if (!userData.approved) {
     redirect('/pending-approval')
   }
 
-  if (userData?.role === 'admin') {
+  if (userData.role === 'admin') {
     redirect('/admin/dashboard')
   } else {
     redirect('/dashboard')

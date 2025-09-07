@@ -38,6 +38,8 @@ function LoginForm() {
         return 'Invalid email or password. Please try again.'
       case 'invalid_input':
         return 'Please check your email and password format.'
+      case 'user_not_found':
+        return 'User account not found in system. Please contact support.'
       default:
         return error
     }
