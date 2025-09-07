@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -14,7 +14,8 @@ import {
   Clock,
   CheckCircle,
   XCircle,
-  MoreHorizontal
+  MoreHorizontal,
+  AlertCircle
 } from 'lucide-react'
 import {
   DropdownMenu,
@@ -22,49 +23,89 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { Alert, AlertDescription } from '@/components/ui/alert'
 
 export default async function AdminDashboard() {
-  const supabase = await createClient()
+  let pendingUsers = null
+  let recentUsers = null
+  let error = null
+  let stats = {
+    totalUsers: 0,
+    approvedUsers: 0,
+    pendingCount: 0,
+    totalGroups: 0,
+    activeBattleplans: 0
+  }
 
-  // Get pending users
-  const { data: pendingUsers } = await supabase
-    .from('users')
-    .select('*')
-    .eq('approved', false)
-    .order('created_at', { ascending: false })
-    .limit(5)
+  try {
+    const supabase = createAdminClient()
 
-  // Get recent approved users
-  const { data: recentUsers } = await supabase
-    .from('users')
-    .select('*')
-    .eq('approved', true)
-    .order('approved_at', { ascending: false })
-    .limit(5)
+    // Get pending users
+    const { data: pendingData, error: pendingError } = await supabase
+      .from('users')
+      .select('*')
+      .eq('approved', false)
+      .order('created_at', { ascending: false })
+      .limit(5)
 
-  // Get stats
-  const { count: totalUsers } = await supabase
-    .from('users')
-    .select('*', { count: 'exact' })
+    if (pendingError) {
+      console.error('Error fetching pending users:', pendingError)
+      error = pendingError.message
+    } else {
+      pendingUsers = pendingData
+    }
 
-  const { count: approvedUsers } = await supabase
-    .from('users')
-    .select('*', { count: 'exact' })
-    .eq('approved', true)
+    // Get recent approved users
+    const { data: recentData, error: recentError } = await supabase
+      .from('users')
+      .select('*')
+      .eq('approved', true)
+      .order('approved_at', { ascending: false })
+      .limit(5)
 
-  const { count: pendingCount } = await supabase
-    .from('users')
-    .select('*', { count: 'exact' })
-    .eq('approved', false)
+    if (recentError) {
+      console.error('Error fetching recent users:', recentError)
+    } else {
+      recentUsers = recentData
+    }
 
-  const { count: totalGroups } = await supabase
-    .from('groups')
-    .select('*', { count: 'exact' })
+    // Get stats
+    const { count: totalUsers } = await supabase
+      .from('users')
+      .select('*', { count: 'exact', head: true })
 
-  const { count: activeBattleplans } = await supabase
-    .from('battleplans')
-    .select('*', { count: 'exact' })
-    .eq('is_active', true)
+    const { count: approvedUsers } = await supabase
+      .from('users')
+      .select('*', { count: 'exact', head: true })
+      .eq('approved', true)
+
+    const { count: pendingCount } = await supabase
+      .from('users')
+      .select('*', { count: 'exact', head: true })
+      .eq('approved', false)
+
+    const { count: totalGroups } = await supabase
+      .from('groups')
+      .select('*', { count: 'exact', head: true })
+
+    const { count: activeBattleplans } = await supabase
+      .from('battleplans')
+      .select('*', { count: 'exact', head: true })
+      .eq('is_active', true)
+
+    stats = {
+      totalUsers: totalUsers || 0,
+      approvedUsers: approvedUsers || 0,
+      pendingCount: pendingCount || 0,
+      totalGroups: totalGroups || 0,
+      activeBattleplans: activeBattleplans || 0
+    }
+
+    console.log('📊 Dashboard stats:', stats)
+  } catch (err) {
+    console.error('Database error:', err)
+    error = 'Failed to connect to database. Please check your Supabase configuration.'
+  }
 
   // Calculate growth percentage (mock data for now)
   const growthPercentage = 12.5
@@ -88,6 +129,20 @@ export default async function AdminDashboard() {
         </div>
       </div>
 
+      {error && (
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>
+            {error}
+            <div className="mt-2 text-xs">
+              • Check your .env.local file has SUPABASE_SERVICE_ROLE_KEY
+              <br />
+              • Verify Supabase is properly configured
+            </div>
+          </AlertDescription>
+        </Alert>
+      )}
+
       {/* Stats Cards with Icons */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
@@ -98,7 +153,7 @@ export default async function AdminDashboard() {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{totalUsers || 0}</div>
+            <div className="text-2xl font-bold">{stats.totalUsers}</div>
             <p className="text-xs text-muted-foreground">
               <span className="text-green-600 font-medium">+{growthPercentage}%</span> from last month
             </p>
@@ -113,9 +168,9 @@ export default async function AdminDashboard() {
             <UserCheck className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{approvedUsers || 0}</div>
+            <div className="text-2xl font-bold">{stats.approvedUsers}</div>
             <p className="text-xs text-muted-foreground">
-              <span className="text-orange-600 font-medium">{pendingCount || 0}</span> pending approval
+              <span className="text-orange-600 font-medium">{stats.pendingCount}</span> pending approval
             </p>
           </CardContent>
         </Card>
@@ -128,7 +183,7 @@ export default async function AdminDashboard() {
             <Shield className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{totalGroups || 0}</div>
+            <div className="text-2xl font-bold">{stats.totalGroups}</div>
             <p className="text-xs text-muted-foreground">
               Across all cities
             </p>
@@ -143,7 +198,7 @@ export default async function AdminDashboard() {
             <Target className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{activeBattleplans || 0}</div>
+            <div className="text-2xl font-bold">{stats.activeBattleplans}</div>
             <p className="text-xs text-muted-foreground">
               Currently in progress
             </p>
@@ -166,6 +221,11 @@ export default async function AdminDashboard() {
                 <CheckCircle className="h-12 w-12 text-muted-foreground mb-4" />
                 <p className="text-lg font-medium">All caught up!</p>
                 <p className="text-sm text-muted-foreground">No pending approvals at the moment</p>
+                {error && (
+                  <p className="text-xs text-red-500 mt-2">
+                    Or check database connection
+                  </p>
+                )}
               </div>
             ) : (
               <div className="space-y-4">
@@ -218,11 +278,11 @@ export default async function AdminDashboard() {
                     </div>
                   </div>
                 ))}
-                {pendingCount && pendingCount > 5 && (
+                {stats.pendingCount > 5 && (
                   <div className="text-center pt-2">
                     <Button variant="outline" size="sm" asChild>
                       <Link href="/admin/approvals">
-                        View all {pendingCount} pending approvals
+                        View all {stats.pendingCount} pending approvals
                       </Link>
                     </Button>
                   </div>
@@ -285,21 +345,21 @@ export default async function AdminDashboard() {
         <CardContent>
           <div className="grid gap-4 md:grid-cols-4">
             <Button variant="outline" className="justify-start" asChild>
-              <Link href="/admin/users/new">
+              <Link href="/admin/users">
                 <Users className="mr-2 h-4 w-4" />
-                Add User
+                View All Users
               </Link>
             </Button>
             <Button variant="outline" className="justify-start" asChild>
-              <Link href="/admin/groups/new">
+              <Link href="/admin/groups">
                 <Shield className="mr-2 h-4 w-4" />
-                Create Group
+                Manage Groups
               </Link>
             </Button>
             <Button variant="outline" className="justify-start" asChild>
-              <Link href="/admin/battleplans/templates">
+              <Link href="/admin/battleplans">
                 <Target className="mr-2 h-4 w-4" />
-                Manage Templates
+                Battleplan Templates
               </Link>
             </Button>
             <Button variant="outline" className="justify-start" asChild>

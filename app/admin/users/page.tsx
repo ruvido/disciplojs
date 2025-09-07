@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -13,7 +13,8 @@ import {
   MapPin,
   MoreHorizontal,
   Shield,
-  Eye
+  Eye,
+  AlertCircle
 } from 'lucide-react'
 import {
   DropdownMenu,
@@ -22,44 +23,80 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { approveUserAction, rejectUserAction } from './actions'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 
 export default async function AdminUsersPage() {
-  const supabase = await createClient()
+  let users = null
+  let error = null
+  let stats = {
+    totalUsers: 0,
+    approvedUsers: 0,
+    pendingUsers: 0
+  }
 
-  // Get all users
-  const { data: users } = await supabase
-    .from('users')
-    .select('*')
-    .order('created_at', { ascending: false })
+  try {
+    const supabase = createAdminClient()
 
-  // Get stats
-  const { count: totalUsers } = await supabase
-    .from('users')
-    .select('*', { count: 'exact' })
+    // Get all users with better error handling
+    const { data: usersData, error: usersError } = await supabase
+      .from('users')
+      .select('*')
+      .order('created_at', { ascending: false })
 
-  const { count: approvedUsers } = await supabase
-    .from('users')
-    .select('*', { count: 'exact' })
-    .eq('approved', true)
+    if (usersError) {
+      console.error('Error fetching users:', usersError)
+      error = usersError.message
+    } else {
+      users = usersData
+      console.log(`✅ Fetched ${users?.length || 0} users`)
+    }
 
-  const { count: pendingUsers } = await supabase
-    .from('users')
-    .select('*', { count: 'exact' })
-    .eq('approved', false)
+    // Get stats
+    const { count: totalUsers } = await supabase
+      .from('users')
+      .select('*', { count: 'exact', head: true })
+
+    const { count: approvedUsers } = await supabase
+      .from('users')
+      .select('*', { count: 'exact', head: true })
+      .eq('approved', true)
+
+    const { count: pendingUsers } = await supabase
+      .from('users')
+      .select('*', { count: 'exact', head: true })
+      .eq('approved', false)
+
+    stats = {
+      totalUsers: totalUsers || 0,
+      approvedUsers: approvedUsers || 0,
+      pendingUsers: pendingUsers || 0
+    }
+  } catch (err) {
+    console.error('Database connection error:', err)
+    error = 'Failed to connect to database. Please check your Supabase configuration.'
+  }
 
   return (
     <div className="flex-1 space-y-4 p-8 pt-6">
       <div className="flex items-center justify-between space-y-2">
         <h2 className="text-3xl font-bold tracking-tight">User Management</h2>
         <div className="flex items-center space-x-2">
-          <Button asChild>
-            <Link href="/admin/users/new">
-              <Users className="mr-2 h-4 w-4" />
-              Add User
+          <Button variant="outline" size="sm" asChild>
+            <Link href="/admin/dashboard">
+              Back to Dashboard
             </Link>
           </Button>
         </div>
       </div>
+
+      {error && (
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>
+            {error}
+          </AlertDescription>
+        </Alert>
+      )}
 
       {/* Stats Cards */}
       <div className="grid gap-4 md:grid-cols-3">
@@ -69,7 +106,7 @@ export default async function AdminUsersPage() {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{totalUsers || 0}</div>
+            <div className="text-2xl font-bold">{stats.totalUsers}</div>
             <p className="text-xs text-muted-foreground">
               All registered users
             </p>
@@ -82,7 +119,7 @@ export default async function AdminUsersPage() {
             <UserCheck className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{approvedUsers || 0}</div>
+            <div className="text-2xl font-bold">{stats.approvedUsers}</div>
             <p className="text-xs text-muted-foreground">
               Active members
             </p>
@@ -95,7 +132,7 @@ export default async function AdminUsersPage() {
             <UserX className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{pendingUsers || 0}</div>
+            <div className="text-2xl font-bold">{stats.pendingUsers}</div>
             <p className="text-xs text-muted-foreground">
               Awaiting approval
             </p>
@@ -116,10 +153,21 @@ export default async function AdminUsersPage() {
             <div className="flex flex-col items-center justify-center py-8 text-center">
               <Users className="h-12 w-12 text-muted-foreground mb-4" />
               <p className="text-lg font-medium">No users found</p>
-              <p className="text-sm text-muted-foreground">Users will appear here once they register</p>
+              <p className="text-sm text-muted-foreground mb-4">
+                {error ? 'Check your database connection' : 'Users will appear here once they register'}
+              </p>
+              <div className="text-xs text-muted-foreground space-y-1">
+                <p>Debug info:</p>
+                <p>• Make sure Supabase is configured</p>
+                <p>• Check SUPABASE_SERVICE_ROLE_KEY is set</p>
+                <p>• Verify the users table exists</p>
+              </div>
             </div>
           ) : (
             <div className="space-y-4">
+              <div className="text-sm text-muted-foreground mb-4">
+                Showing {users.length} user{users.length !== 1 ? 's' : ''}
+              </div>
               {users.map((user) => (
                 <div key={user.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent/50 transition-colors">
                   <div className="flex items-center space-x-4">
@@ -131,13 +179,13 @@ export default async function AdminUsersPage() {
                     </Avatar>
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
-                        <p className="text-sm font-medium leading-none">{user.name}</p>
+                        <p className="text-sm font-medium leading-none">{user.name || 'No name'}</p>
                         <Badge variant={user.approved ? 'default' : 'secondary'}>
                           {user.approved ? 'Approved' : 'Pending'}
                         </Badge>
                         <Badge variant="outline">
                           {user.role === 'admin' && <Shield className="w-3 h-3 mr-1" />}
-                          {user.role}
+                          {user.role || 'member'}
                         </Badge>
                       </div>
                       <div className="flex items-center gap-4 text-xs text-muted-foreground">

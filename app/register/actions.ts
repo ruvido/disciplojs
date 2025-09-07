@@ -1,10 +1,12 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
 
 export async function registerAction(formData: FormData) {
   const supabase = await createClient()
+  const adminClient = createAdminClient()
   
   console.log('🚀 Starting registration process...')
   
@@ -37,11 +39,16 @@ export async function registerAction(formData: FormData) {
   
   const { email, password, name, city, bio } = validatedData
 
-  // Sign up user
+  // Sign up user using regular client
   console.log('👤 Creating auth user...')
   const { error: signUpError, data } = await supabase.auth.signUp({
     email,
     password,
+    options: {
+      data: {
+        name: name,
+      }
+    }
   })
 
   if (signUpError) {
@@ -59,9 +66,9 @@ export async function registerAction(formData: FormData) {
 
   console.log('✅ Auth user created:', data.user.id)
 
-  // Create user profile
+  // Create user profile using admin client for better reliability
   console.log('👤 Creating user profile...')
-  const { error: profileError } = await supabase
+  const { error: profileError } = await adminClient
     .from('users')
     .insert({
       id: data.user.id,
@@ -78,10 +85,14 @@ export async function registerAction(formData: FormData) {
     console.error('❌ Profile creation error:', profileError)
     // Try to clean up the auth user
     try {
-      await supabase.auth.admin.deleteUser(data.user.id)
-      console.log('🧹 Cleaned up orphaned auth user')
+      const { error: deleteError } = await adminClient.auth.admin.deleteUser(data.user.id)
+      if (deleteError) {
+        console.error('❌ Could not clean up auth user:', deleteError)
+      } else {
+        console.log('🧹 Cleaned up orphaned auth user')
+      }
     } catch (cleanupError) {
-      console.error('❌ Could not clean up auth user:', cleanupError)
+      console.error('❌ Cleanup error:', cleanupError)
     }
     redirect('/register?error=profile_creation_failed')
   }
